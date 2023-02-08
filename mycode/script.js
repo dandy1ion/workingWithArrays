@@ -2,9 +2,10 @@
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
-// BANKIST APP
+// BANKIST APP (MINIMILIST BANKING) //USER:js PIN:1111
+//USER:jd PIN:2222
 
-// Data
+// Data (account objects)
 const account1 = {
   owner: 'Jonas Schmedtmann',
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
@@ -33,6 +34,7 @@ const account4 = {
   pin: 4444,
 };
 
+//accounts array contains all the accounts
 const accounts = [account1, account2, account3, account4];
 
 // Elements
@@ -61,18 +63,134 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+///////////////////////////////////////////////////////////
+//DOM MANIPULATION
+const displayMovements = function (movements) {
+  //empty container first
+  containerMovements.innerHTML = '';
+  //insert new html
+  movements.forEach(function (mov, i) {
+    //terinary operator (for if deposit or withdrawal)
+    const type = mov > 0 ? 'deposit' : 'withdrawal';
+    //create template literal for html template
+    const html = `
+    <div class="movements__row">
+        <div class="movements__type movements__type--${type}">${
+      i + 1
+    } ${type}</div>
+        <div class="movements__value">${mov}</div>
+    </div>
+    `;
+    //.movements (class for this div)
+    //method: insertAdjecentHTML accepts two strings:
+    //first the position in which we want to attach the html
+    //second the html we want to insert
+    //MDN documentation for more details
+    containerMovements.insertAdjacentHTML('afterbegin', html);
+    //this way ('afterbegin') latest element at top
+    //'beforeend' the elements would be inverted (each new element added at at)
+  });
+};
+
+displayMovements(account1.movements);
+//show the html we just created:
+//console.log(containerMovements.innerHTML);
+
+///////////////////////////////////////////////////////////////////
+//REDUCE METHOD
+//use element class from index.html to display where desired
+//const labelBalance = document.querySelector('.balance__value');
+const calcDisplayBalance = function (movements) {
+  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+  //label = txt
+  labelBalance.textContent = `${balance} EUR`;
+};
+calcDisplayBalance(account1.movements);
+
+//////////////////////////////////////////////////////////////////////
+//THE MAGIC OF CHAINING METHODS
+const calcDisplaySummary = function (movements) {
+  const incomes = movements.filter(mov > 0).reduce((acc, mov) => acc + mov, 0);
+};
+calcDisplaySummary(account1.movements);
+
+//From Elements
+//const labelSumIn = document.querySelector('.summary__value--in');
+//const labelSumOut = document.querySelector('.summary__value--out');
+//const labelSumInterest = document.querySelector('.summary__value--interest');
+
+////////////////////////////////////////////////////////////////
+//COMPUTING USERNAMES (MAP method & FOREACH)
+
+//put username into a function
+//const createUsernames = function (user) {
+//  const username = user
+//    .toLowerCase()
+//    .split(' ')
+//    .map(
+//      name => name[0] //return first letter of each word
+//      //map always returns new value for new array
+//    )
+//    .join(''); //call join on array (give us string'')
+//  return username;
+//};
+//console.log(createUsernames('Steven Thomas Williams'));
+
+//now modify this to recieve all the accounts
+//loop over the accounts array & get the username from the owner name
+const createUsernames = function (accs) {
+  //use foreach method
+  //don't want to create a new array but just modify the array we get as input
+  accs.forEach(function (acc) {
+    //create new property on account called username
+    //username will contain the name we create here
+    acc.username = acc.owner
+      .toLowerCase()
+      .split(' ')
+      .map(
+        name => name[0] //return first letter of each word
+        //map always returns new value for new array
+      )
+      .join(''); //call join on array (give us string'')
+  });
+};
+createUsernames(accounts);
+//console.log(accounts); //check for new property of username
+
+//const user = 'Steven Thomas Williams'; //username stw
+//const username = user
+//  .toLowerCase()
+//  .split(' ')
+//  .map(function (name) {
+//    return name[0]; //return first letter of each word
+//  })
+//  .join(''); //call join on array (give us string'')
+//console.log(username); //check output
+
+//same with arrow function
+//const username = user
+//  .toLowerCase()
+//  .split(' ')
+//  .map(
+//    name => name[0] //return first letter of each word
+//    //map always returns new value for new array
+//  )
+//  .join(''); //call join on array (give us string'')
+//console.log(username); //check output
+
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
 
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
+//const currencies = new Map([
+//  ['USD', 'United States dollar'],
+//  ['EUR', 'Euro'],
+//  ['GBP', 'Pound sterling'],
+//]);
 
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+//const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
+/*
 /////////////////////////////////////////////////
 
 //SIMPLE ARRAY METHODS
@@ -132,5 +250,348 @@ console.log(letters.join('_')); //result = string with specified separator
 
 //methods we already know : push, etc (video #40) or look on MDN
 
+
 /////////////////////////////////////////////////////////////////
 //THE NEW AT METHOD
+
+const arr = [23, 11, 64];
+console.log(arr[0]); //array at position 0
+console.log(arr.at(0)); //at method (array at position 0)
+
+//get last element of the array without knowing the length of the array
+console.log(arr[arr.length - 1]);
+console.log(arr.slice(-1)[0]);
+//with new at method
+console.log(arr.at(-1));
+console.log(arr.at(-2));
+//good for method chaining as well
+
+//at method also works on strings
+console.log('jonas'.at(0));
+console.log('jonas'.at(-1));
+
+
+//////////////////////////////////////////////////////////////////
+//LOOPING ARRAYS: FOREACH
+
+//bank account deposits and withdrawels
+const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
+//forof loop
+console.log('----FOROF----');
+for (const movement of movements) {
+  if (movement > 0) {
+    console.log(`You deposited ${movement}`);
+  } else {
+    console.log(`You withdrew ${Math.abs(movement)}`);
+  }
+}
+
+//foreach loop
+//foreach will call the callback function
+//foreach loops over the array and in each iteration it will execute the callback
+//also passes the current element of the array through the functione as an argument
+console.log('----FOREACH----');
+movements.forEach(function (movement) {
+  if (movement > 0) {
+    console.log(`You deposited ${movement}`);
+  } else {
+    console.log(`You withdrew ${Math.abs(movement)}`);
+  }
+});
+//0: anonymous function(200)
+//1: anonymous function(450)
+//etc...
+//callback functions tell higher order functions what to do
+
+//NEED ACCESS TO COUNTER INDEX
+//forof
+//[index, current element]
+console.log('----FOROF----');
+for (const [i, movement] of movements.entries()) {
+  if (movement > 0) {
+    console.log(`Movement ${i + 1} You deposited ${movement}`);
+  } else {
+    console.log(`Movement ${i + 1} You withdrew ${Math.abs(movement)}`);
+  }
+}
+//foreach
+//passes in the current element, the index, and the entire array we are looping
+//names don't matter but the order does:
+//(current element, index, array)
+//use one, two or all three
+console.log('----FOREACH----');
+movements.forEach(function (mov, i, arr) {
+  if (mov > 0) {
+    console.log(`Movement ${i + 1} You deposited ${mov}`);
+  } else {
+    console.log(`Movement ${i + 1} You withdrew ${Math.abs(mov)}`);
+  }
+});
+//can not break out of a foreach loop (will always loop over entire array)
+//continue & break statements do NOT work in foreach
+
+
+///////////////////////////////////////////////////////////////////
+//FOREACH WITH MAPS & SETS
+
+//MAP
+const currencies = new Map([
+  ['USD', 'United States dollar'],
+  ['EUR', 'Euro'],
+  ['GBP', 'Pound sterling'],
+]);
+
+//order of arguments (current element value of the current iteration,
+//the current element key, the entire map)
+currencies.forEach(function (value, key, map) {
+  console.log(`${key}: ${value}`);
+});
+
+//SET
+const currenciesUnique = new Set(['USD', 'GBP', 'USD', 'EUR', 'EUR']);
+console.log(currenciesUnique);
+//no keys in sets so key value not needed (convention = _ underscore is a throwaway value)
+//no need to use second input as it is set to the value also
+currenciesUnique.forEach(function (value, _, map) {
+  console.log(`${_}: ${value}`);
+});
+*/
+
+////////////////////////////////////////////////////////////////////////
+//PROJECT: "BANKIST"
+//starts at line 65
+
+////////////////////////////////////////////////////////////////////
+//CODING CHALLENGE #1
+
+/* 
+Julia and Kate are doing a study on dogs. So each of them asked 5 dog owners about their dog's age, and stored the data into an array (one array for each). For now, they are just interested in knowing whether a dog is an adult or a puppy. A dog is an adult if it is at least 3 years old, and it's a puppy if it's less than 3 years old.
+
+Create a function 'checkDogs', which accepts 2 arrays of dog's ages ('dogsJulia' and 'dogsKate'), and does the following things:
+
+1. Julia found out that the owners of the FIRST and the LAST TWO dogs actually have cats, not dogs! So create a shallow copy of Julia's array, and remove the cat ages from that copied array (because it's a bad practice to mutate function parameters)
+2. Create an array with both Julia's (corrected) and Kate's data
+3. For each remaining dog, log to the console whether it's an adult ("Dog number 1 is an adult, and is 5 years old") or a puppy ("Dog number 2 is still a puppy 🐶")
+4. Run the function for both test datasets
+
+HINT: Use tools from all lectures in this section so far
+
+TEST DATA 1: Julia's data [3, 5, 2, 12, 7], Kate's data [4, 1, 15, 8, 3]
+TEST DATA 2: Julia's data [9, 16, 6, 8, 3], Kate's data [10, 5, 6, 1, 4]
+
+GOOD LUCK!!!
+*/
+
+/*
+const checkDogs = function (dogsJulia, dogsKate) {
+  const dogsJuliaCorrected = dogsJulia.slice();
+  dogsJuliaCorrected.splice(0, 1);
+  dogsJuliaCorrected.splice(-2);
+  //console.log(dogsJuliaCorrected);
+  //same result:
+  //dogsJulia.slice(1, 3);
+  const dogs = dogsJuliaCorrected.concat(dogsKate);
+  console.log(dogs);
+
+  dogs.forEach(function (dog, i) {
+    //("Dog number 1 is an adult, and is 5 years old") or
+    //("Dog number 2 is still a puppy 🐶")
+    if (dog >= 3) {
+      console.log(`Dog number ${i + 1} is an adult, and is ${dog} years old`);
+    } else {
+      console.log(`Dog number ${i + 1} is still a puppy 🐶`);
+    }
+  });
+};
+checkDogs([3, 5, 2, 12, 7], [4, 1, 15, 8, 3]);
+checkDogs([9, 16, 6, 8, 3], [10, 5, 6, 1, 4]);
+
+
+////////////////////////////////////////////////////////////////
+//DATA TRANSFORMATIONS: MAP, FILTER, REDUCE
+//methods we use to create new arrays based on transforming data from other arrays
+//MAP:
+//another method we can use to loop over arrays
+//similar to FOREACH method with difference of
+//MAP creates(maps) a brand new array based on the original array
+//FILTER:
+//used to filter for elements in the original array that satisfy a certain criteria
+//elements for the condition is true = included in new array
+//REDUCE:
+//use to "boil down"(reduce) all the original array values/elements into one single value
+//no new array just the reduced value
+
+///////////////////////////////////////////////////////////////
+//THE MAP METHOD
+
+const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
+//convert from Euro to USD
+const euroToUsd = 1.1;
+
+//callback function takes argument of current array element
+const movementsUSD = movements.map(function (mov) {
+  return mov * euroToUsd;
+  //return 23; just replaces original elements with 23
+});
+
+//replace callback with an arrow function
+//const movementsUSD = movements.map(mov => mov * euroToUsd);
+
+console.log(movements); //original array not manipulated
+console.log(movementsUSD);
+
+//use forof loop to do same thing
+const movementsUSDfor = []; //empty new array
+for (const mov of movements) movementsUSDfor.push(mov * euroToUsd);
+console.log(movementsUSDfor);
+
+//access to 3 parameters: current array element, current index, & the whole array
+//can have multiple returns as long as only one can be executed
+//const movementsDescriptions = movements.map((mov, i, arr) => {
+//  if (mov > 0) {
+//    return `Movement ${i + 1} You deposited ${mov}`;
+//  } else {
+//    return `Movement ${i + 1} You withdrew ${Math.abs(mov)}`;
+//  }
+//});
+//use terinary operator with map
+const movementsDescriptions = movements.map(
+  (mov, i) =>
+    `Movement ${i + 1}: You ${mov > 0 ? 'deposited' : 'withdrew'} ${Math.abs(
+      mov
+    )}`
+);
+console.log(movementsDescriptions);
+
+
+/////////////////////////////////////////////////////////////////
+//THE FILTER METHOD
+//filter for elements that satisfy a certain condition
+const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
+//working with current element (also able to have index and whole array)
+//function(mov, i, arr)
+//create an array of the deposits
+//filter out negative values
+const deposits = movements.filter(function (mov) {
+  return mov > 0;
+  //only array element for which this condition is met will be in the array
+});
+//***chaining possible***
+console.log(movements);
+console.log(deposits);
+
+//same with forof loop
+const depositsFor = [];
+for (const mov of movements) if (mov > 0) depositsFor.push(mov);
+console.log(depositsFor);
+
+//create array of withdrawals
+//use arrow function
+//returns negative numbers
+const withdrawals = movements.filter(mov => mov < 0);
+console.log(withdrawals);
+*/
+
+/////////////////////////////////////////////////////////////////
+//THE REDUCE METHOD ('boil down' values in array to one single value)
+const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+console.log(movements);
+
+//accumulator -> SNOWBALL
+//function(accumulator, current element, index, whole array)
+//const balance = movements.reduce(function (acc, cur, i, arr) {
+//  //log each iteration:accumulator
+//  console.log(`Iteration ${i}: ${acc}`);
+//  return acc + cur;
+//}, 0); //initial value of the accumulator
+//console.log(balance); //3840
+//same with arrow function, simplified/shorthand
+const balance = movements.reduce((acc, cur) => acc + cur, 0); //initial value of the accumulator
+console.log(balance); //3840
+//***able to do chaining***
+
+//same with forof loop
+let balance2 = 0; //need external variable with forof loop
+for (const mov of movements) balance2 += mov;
+console.log(balance2); //3840
+
+//example:
+//Maximum value from movements array
+const max = movements.reduce((acc, mov) => {
+  //if accumulator is greater than the current value (movement) return accumulator
+  if (acc > mov) return acc; //keep accumulator value
+  else return mov; //if current value is more then keep it
+}, movements[0]); //accumulator starts at first position in array
+console.log(max);
+
+////////////////////////////////////////////////////////////////
+//CODING CHALLENGE #2
+
+/* 
+Let's go back to Julia and Kate's study about dogs. This time, they want to convert dog ages to human ages and calculate the average age of the dogs in their study.
+
+Create a function 'calcAverageHumanAge', which accepts an arrays of dog's ages ('ages'), and does the following things in order:
+
+1. Calculate the dog age in human years using the following formula: if the dog is <= 2 years old, humanAge = 2 * dogAge. If the dog is > 2 years old, humanAge = 16 + dogAge * 4.
+2. Exclude all dogs that are less than 18 human years old (which is the same as keeping dogs that are at least 18 years old)
+3. Calculate the average human age of all adult dogs (you should already know from other challenges how we calculate averages)
+4. Run the function for both test datasets
+
+TEST DATA 1: [5, 2, 4, 1, 15, 8, 3]
+TEST DATA 2: [16, 6, 10, 5, 6, 1, 4]
+
+GOOD LUCK!!!
+*/
+
+/*
+//use map, filter, and reduce methods
+
+const calcAverageHumanAge = function (ages) {
+  //calculate dog age to human years
+  const humanAges = ages.map(age => (age <= 2 ? 2 * age : 16 + age * 4));
+  console.log(humanAges);
+  //only include dogs age 18 and older
+  const adults = humanAges.filter(age => age >= 18);
+  console.log(adults);
+  //average human age of all the adult dogs
+  const average = adults.reduce((acc, age) => acc + age, 0) / adults.length;
+  //good use case for the whole array
+  //const average = adults.reduce((acc, age, i, arr) => acc + age / arr.length, 0);
+  //calc average of 2 & 3
+  //(2+3)/2 = 2.5
+  //or
+  //2/2 + 3/2= 2.5
+
+  return average;
+};
+const avg1 = calcAverageHumanAge([5, 2, 4, 1, 15, 8, 3]);
+const avg2 = calcAverageHumanAge([16, 6, 10, 5, 6, 1, 4]);
+console.log(avg1, avg2);
+*/
+
+//////////////////////////////////////////////////////////////////////
+//THE MAGIC OF CHAINING METHODS
+//take all the movement deposits then convert them from euros to dollars
+//and finally add them all up (how much deposited to account in US dollars)
+const euroToUsd = 1.1;
+//like a PIPELINE
+const totalDepositsUSD = movements
+  .filter(mov => mov > 0) //chain to array
+  .map(mov => mov * euroToUsd) //chain to array
+  .reduce((acc, mov) => acc + mov, 0); //returns value
+console.log(totalDepositsUSD);
+//if you make a mistake in your parameters..
+//it is good to see the arrays you are getting to know how to finish
+//const euroToUsd = 1.1;
+//How to check for errors in arrays
+//const totalDepositsUSD = movements
+//  .filter(mov => mov < 0) //mistake will give you negative number
+//  .map((mov, i, arr) => {
+//    console.log(arr); //use array parameter to check
+//    return mov * euroToUsd;
+//  })
+//  .reduce((acc, mov) => acc + mov, 0); //returns value
+//console.log(totalDepositsUSD);
