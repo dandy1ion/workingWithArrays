@@ -78,7 +78,7 @@ const displayMovements = function (movements) {
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov}</div>
+        <div class="movements__value">${mov}€</div>
     </div>
     `;
     //.movements (class for this div)
@@ -92,7 +92,7 @@ const displayMovements = function (movements) {
   });
 };
 
-displayMovements(account1.movements);
+//displayMovements(account1.movements);
 //show the html we just created:
 //console.log(containerMovements.innerHTML);
 
@@ -100,20 +100,81 @@ displayMovements(account1.movements);
 //REDUCE METHOD
 //use element class from index.html to display where desired
 //const labelBalance = document.querySelector('.balance__value');
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+//const calcDisplayBalance = function (movements) {
+//  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+//  //label = txt
+//  labelBalance.textContent = `${balance}€`;
+//};
+//calcDisplayBalance(account1.movements);
+
+//have function accept accounts so we will have accesss to movements and balance
+const calcDisplayBalance = function (acc) {
+  //create new property on account labeled balance
+  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
   //label = txt
-  labelBalance.textContent = `${balance} EUR`;
+  labelBalance.textContent = `${acc.balance}€`;
 };
-calcDisplayBalance(account1.movements);
 
 //////////////////////////////////////////////////////////////////////
 //THE MAGIC OF CHAINING METHODS
-const calcDisplaySummary = function (movements) {
-  const incomes = movements.filter(mov > 0).reduce((acc, mov) => acc + mov, 0);
-};
-calcDisplaySummary(account1.movements);
+//const calcDisplaySummary = function (movements) {
+//  //IN
+//  const incomes = movements
+//    .filter(mov => mov > 0)
+//    .reduce((acc, mov) => acc + mov, 0);
+//  labelSumIn.textContent = `${incomes}€`;
+//
+//  //OUT
+//  const out = movements
+//    .filter(mov => mov < 0)
+//    .reduce((acc, mov) => acc + mov, 0);
+//  labelSumOut.textContent = `${Math.abs(out)}€`;
+//
+//  //INTEREST
+//  //bank pays out interest whenever deposit made
+//  //interest = 1.2% of deposited amount
+//  const interest = movements
+//    .filter(mov => mov > 0)
+//    .map(deposit => deposit * 0.012)
+//    //only pay interest when greater than 1
+//    .filter((int, i, arr) => {
+//      //console.log(arr); //show array of interests
+//      return int >= 1;
+//    })
+//    .reduce((acc, int) => acc + int, 0);
+//  labelSumInterest.textContent = `${interest}€`;
+//};
+//calcDisplaySummary(account1.movements);
 
+//***INTEREST displayed dynamically depending on current user***
+//accept the full account to have access to movements and interest rate
+const calcDisplaySummary = function (acc) {
+  //IN
+  const incomes = acc.movements
+    .filter(mov => mov > 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSumIn.textContent = `${incomes}€`;
+
+  //OUT
+  const out = acc.movements
+    .filter(mov => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSumOut.textContent = `${Math.abs(out)}€`;
+
+  //INTEREST
+  //bank pays out interest whenever deposit made
+  //interest = 1.2% of deposited amount
+  const interest = acc.movements
+    .filter(mov => mov > 0)
+    .map(deposit => (deposit * acc.interestRate) / 100) //current accounts interest rate
+    //only pay interest when greater than 1
+    .filter((int, i, arr) => {
+      //console.log(arr); //show array of interests
+      return int >= 1;
+    })
+    .reduce((acc, int) => acc + int, 0);
+  labelSumInterest.textContent = `${interest}€`;
+};
 //From Elements
 //const labelSumIn = document.querySelector('.summary__value--in');
 //const labelSumOut = document.querySelector('.summary__value--out');
@@ -178,6 +239,147 @@ createUsernames(accounts);
 //  .join(''); //call join on array (give us string'')
 //console.log(username); //check output
 
+//function to update the User Interface
+const updateUI = function (acc) {
+  //Display movements
+  displayMovements(acc.movements);
+  //Display balance
+  //use full account to have access to movements and balance
+  calcDisplayBalance(acc);
+  //Display summary
+  //use full account to have access to movements and interest rate
+  calcDisplaySummary(acc);
+};
+
+////////////////////////////////////////////////////////////////////////
+//LOGIN FUNCTIONALITY
+
+//******EVENT HANDLERS*****
+
+//variables
+let currentAccount;
+//to stop browser from auto reloading put in event as parameter (e)
+//enter and click both create click event
+btnLogin.addEventListener('click', function (e) {
+  // Prevent form from submitting with event parameter
+  e.preventDefault();
+  //console.log('LOGIN');
+
+  //username input matches username value in accounts
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  );
+  //console.log(currentAccount);
+
+  //pin input matches pin value in accounts
+  //use optional chaining (?)
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    //Display UI and welcome message
+    //first name of current account holder
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(' ')[0]
+    }`;
+    containerApp.style.opacity = 100;
+    //Clear input fields
+    //make sure to use .value so you don't set the entire element to empty
+    inputLoginUsername.value = inputLoginPin.value = '';
+    //use blur method to make pin field loose focuse (no cursor)
+    inputLoginPin.blur();
+
+    //Display movements
+    //displayMovements(currentAccount.movements);
+    //Display balance
+    //use full account to have access to movements and balance
+    //calcDisplayBalance(currentAccount);
+    //Display summary
+    //use full account to have access to movements and interest rate
+    //calcDisplaySummary(currentAccount);
+
+    //put above into function
+    updateUI(currentAccount);
+  }
+});
+
+//////////////////////////////////////////////////////////////////////////
+//Implementing Transfers
+
+//need event to prevent default behavior
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  //need to access the username equal to input username
+  const receiverAcc = accounts.find(
+    acc => acc.username === inputTransferTo.value
+  );
+  //console.log(amount, receiverAcc);
+
+  //clear input fields (remember to use .value)
+  inputTransferAmount.value = inputTransferTo.value = '';
+
+  if (
+    amount > 0 && //check if amount is a positive number
+    receiverAcc && //check if receiver account even exists
+    currentAccount.balance >= amount &&
+    //check if balance available is enough for transfer
+    receiverAcc?.username !== currentAccount.username
+    //check if transfer to is not the current account username
+  ) {
+    //console.log('Transfer valid');
+    //Complete Transfer
+    //add negative movement (withdrawal) to current user
+    currentAccount.movements.push(-amount);
+    //add positive movement (deposit) to recipient
+    receiverAcc.movements.push(amount);
+    //update UI
+    updateUI(currentAccount);
+  }
+});
+
+////////////////////////////////////////////////////////////////////
+//USE SOME METHOD FOR LOAN REQUEST
+//bank only grants loan if there is at least one deposit...
+//with at least 10% of the requested loan amount
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount / 10)) {
+  }
+});
+
+////////////////////////////////////////////////////////////////////
+//THE FIND INDEX METHOD
+//returns index of the found element (also has access to the entire array)
+//has callback function that loops over array
+
+//CLOSE ACCOUNT
+//use splice with index from the find index method
+
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+  //console.log('Delete');
+
+  //check if credentials are correct
+  //user = current user & pin matches
+  if (
+    inputCloseUsername.value === currentAccount.username &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    const index = accounts.findIndex(
+      acc => acc.username === currentAccount.username
+      //find match in accounts to username & current account username
+    );
+    console.log(index);
+    //Delete Account (deletes element in accounts array)
+    accounts.splice(index, 1);
+
+    //Hide UI
+    containerApp.style.opacity = 0;
+  }
+
+  //clear input fields
+  inputCloseUsername.value = inputClosePin.value = '';
+});
+
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
@@ -188,7 +390,7 @@ createUsernames(accounts);
 //  ['GBP', 'Pound sterling'],
 //]);
 
-//const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /*
 /////////////////////////////////////////////////
@@ -274,8 +476,8 @@ console.log('jonas'.at(-1));
 //////////////////////////////////////////////////////////////////
 //LOOPING ARRAYS: FOREACH
 
-//bank account deposits and withdrawels
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+//bank account deposits and withdrawals
+console.log(movements);
 
 //forof loop
 console.log('----FOROF----');
@@ -425,7 +627,7 @@ checkDogs([9, 16, 6, 8, 3], [10, 5, 6, 1, 4]);
 ///////////////////////////////////////////////////////////////
 //THE MAP METHOD
 
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+console.log(movements);
 
 //convert from Euro to USD
 const euroToUsd = 1.1;
@@ -469,7 +671,7 @@ console.log(movementsDescriptions);
 /////////////////////////////////////////////////////////////////
 //THE FILTER METHOD
 //filter for elements that satisfy a certain condition
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+console.log(movements);
 
 //working with current element (also able to have index and whole array)
 //function(mov, i, arr)
@@ -493,11 +695,10 @@ console.log(depositsFor);
 //returns negative numbers
 const withdrawals = movements.filter(mov => mov < 0);
 console.log(withdrawals);
-*/
+
 
 /////////////////////////////////////////////////////////////////
 //THE REDUCE METHOD ('boil down' values in array to one single value)
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 console.log(movements);
 
 //accumulator -> SNOWBALL
@@ -526,6 +727,7 @@ const max = movements.reduce((acc, mov) => {
   else return mov; //if current value is more then keep it
 }, movements[0]); //accumulator starts at first position in array
 console.log(max);
+*/
 
 ////////////////////////////////////////////////////////////////
 //CODING CHALLENGE #2
@@ -570,10 +772,14 @@ const calcAverageHumanAge = function (ages) {
 const avg1 = calcAverageHumanAge([5, 2, 4, 1, 15, 8, 3]);
 const avg2 = calcAverageHumanAge([16, 6, 10, 5, 6, 1, 4]);
 console.log(avg1, avg2);
-*/
+
 
 //////////////////////////////////////////////////////////////////////
 //THE MAGIC OF CHAINING METHODS
+//use wisely(condense it to as few methods as possible)
+//bad practice to chain methods that change the underlying original array
+//(ex: splice or reverse)
+
 //take all the movement deposits then convert them from euros to dollars
 //and finally add them all up (how much deposited to account in US dollars)
 const euroToUsd = 1.1;
@@ -595,3 +801,60 @@ console.log(totalDepositsUSD);
 //  })
 //  .reduce((acc, mov) => acc + mov, 0); //returns value
 //console.log(totalDepositsUSD);
+*/
+
+////////////////////////////////////////////////////////////////////////
+//CODING CHALLENGE #3
+
+/* 
+Rewrite the 'calcAverageHumanAge' function from the previous challenge, but this time as an arrow function, and using chaining!
+
+TEST DATA 1: [5, 2, 4, 1, 15, 8, 3]
+TEST DATA 2: [16, 6, 10, 5, 6, 1, 4]
+
+GOOD LUCK!!!
+
+
+const calcAverageHumanAge = ages =>
+  ages
+    .map(age => (age <= 2 ? 2 * age : 16 + age * 4))
+    .filter(age => age >= 18)
+    .reduce((acc, age, i, arr) => acc + age / arr.length, 0);
+const avg1 = calcAverageHumanAge([5, 2, 4, 1, 15, 8, 3]);
+const avg2 = calcAverageHumanAge([16, 6, 10, 5, 6, 1, 4]);
+console.log(avg1, avg2);
+
+
+////////////////////////////////////////////////////////////////////////
+//THE FIND METHOD
+//use to retrieve one element of an array based on a condition
+console.log(movements);
+//accepts a condition and a callbackfunction(called as the method loops)
+//does NOT return a new array
+//ONLY returns the first element in the array that satisfies the condition
+const firstWithdrawal = movements.find(mov => mov < 0);
+console.log(movements);
+console.log(firstWithdrawal);
+
+//find an object in the array based on some property of that object
+console.log(accounts);
+
+const account = accounts.find(acc => acc.owner === 'Jessica Davis');
+console.log(account);
+*/
+
+//////////////////////////////////////////////////////////////////////////
+//SOME & EVERY METHODS
+
+console.log(movements);
+//includes returns true/false for EQUALITY to parameter for any value in the array
+console.log(movements.includes(-130)); //true
+
+//some method tests for a CONDITION
+console.log(movements.some(mov => mov === -130)); //true
+//test for any positive movements
+const anyDeposits = movements.some(mov => mov > 0);
+console.log(anyDeposits); //true
+//test for any deposit above 5000
+//const anyDeposits = movements.some(mov => mov > 5000);
+//console.log(anyDeposits); //false
