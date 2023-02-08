@@ -342,8 +342,15 @@ btnTransfer.addEventListener('click', function (e) {
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
   const amount = Number(inputLoanAmount.value);
-  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount / 10)) {
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+    // Add Movement
+    currentAccount.movements.push(amount);
+
+    //Update UI
+    updateUI(currentAccount);
   }
+  //Clear input fields
+  inputLoanAmount.value = '';
 });
 
 ////////////////////////////////////////////////////////////////////
@@ -841,7 +848,7 @@ console.log(accounts);
 
 const account = accounts.find(acc => acc.owner === 'Jessica Davis');
 console.log(account);
-*/
+
 
 //////////////////////////////////////////////////////////////////////////
 //SOME & EVERY METHODS
@@ -850,7 +857,7 @@ console.log(movements);
 //includes returns true/false for EQUALITY to parameter for any value in the array
 console.log(movements.includes(-130)); //true
 
-//some method tests for a CONDITION
+//SOME METHOD tests for a CONDITION
 console.log(movements.some(mov => mov === -130)); //true
 //test for any positive movements
 const anyDeposits = movements.some(mov => mov > 0);
@@ -858,3 +865,37 @@ console.log(anyDeposits); //true
 //test for any deposit above 5000
 //const anyDeposits = movements.some(mov => mov > 5000);
 //console.log(anyDeposits); //false
+
+//EVERY METHOD
+//only returns true if all the elements in the array satisfy the condition
+
+//check to see if all movements are deposits
+console.log(movements.every(mov => mov > 0)); //False
+console.log(account4.movements.every(mov => mov > 0)); //True
+
+//can write function separately and then pass the function as a callback
+const deposit = mov => mov > 0;
+console.log(movements.some(deposit));
+console.log(movements.every(deposit));
+console.log(movements.filter(deposit));
+//easier to change the function in one place then all the others auto update
+*/
+
+///////////////////////////////////////////////////////////////////
+//FLAT AND FLATMAP METHODS
+
+//nested array (array with arrays in it)
+const arr = [[1, 2, 3], [4, 5, 6], 7, 8];
+console.log(arr.flat());
+//removed nested arrays and flatened the array
+
+const arrDeep = [[[1, 2], 3], [4, [5, 6]], 7, 8];
+console.log(arrDeep.flat());
+//flat method only goes one level deep as default
+//add level of depth/nesting
+console.log(arrDeep.flat(2));
+
+const accountMovements = accounts.map(acc => acc.movements);
+console.log(accountMovements);
+const allMovements = accountMovements.flat();
+console.log(allMovements);
