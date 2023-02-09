@@ -65,11 +65,19 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 ///////////////////////////////////////////////////////////
 //DOM MANIPULATION
-const displayMovements = function (movements) {
+//ADD SORT METHOD
+//set sort parameter to false by default
+const displayMovements = function (movements, sort = false) {
   //empty container first
   containerMovements.innerHTML = '';
+
+  //if sort is true then sort the movements in ascending order
+  //else if sort is false then just leave as movements
+  //use slice method to create copy of array and then keep chaining
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+
   //insert new html
-  movements.forEach(function (mov, i) {
+  movs.forEach(function (mov, i) {
     //terinary operator (for if deposit or withdrawal)
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     //create template literal for html template
@@ -298,6 +306,15 @@ btnLogin.addEventListener('click', function (e) {
     //put above into function
     updateUI(currentAccount);
   }
+});
+
+//define external variable
+let sorted = false;
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault();
+  //sort in ascending order when sort button clicked
+  displayMovements(currentAccount.movements, !sorted); //sorted true
+  sorted = !sorted; //sorted false
 });
 
 //////////////////////////////////////////////////////////////////////////
@@ -879,7 +896,6 @@ console.log(movements.some(deposit));
 console.log(movements.every(deposit));
 console.log(movements.filter(deposit));
 //easier to change the function in one place then all the others auto update
-*/
 
 ///////////////////////////////////////////////////////////////////
 //FLAT AND FLATMAP METHODS
@@ -895,7 +911,306 @@ console.log(arrDeep.flat());
 //add level of depth/nesting
 console.log(arrDeep.flat(2));
 
-const accountMovements = accounts.map(acc => acc.movements);
-console.log(accountMovements);
-const allMovements = accountMovements.flat();
-console.log(allMovements);
+//const accountMovements = accounts.map(acc => acc.movements);
+//console.log(accountMovements);
+//const allMovements = accountMovements.flat();
+//console.log(allMovements);
+//const overalBalance = allMovements.reduce((acc, mov) => acc + mov, 0);
+//console.log(overalBalance);
+
+//sleeker code with chaining
+//(flat method good for nested arrays, especially when deeper than one level)
+const overalBalance = accounts
+  .map(acc => acc.movements)
+  .flat()
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(overalBalance);
+
+//FLATMAP METHOD
+//combines flat method and map method in one method
+const overalBalance2 = accounts
+  .flatMap(acc => acc.movements) //only goes one level deep and can not change that
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(overalBalance2);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+//SORTING ARRAYS
+
+//use JavaScripts built-in sort method
+//start with array of STRINGS
+const owners = ['Jonas', 'Zach', 'Adam', 'Martha'];
+console.log(owners.sort()); //sorts by alphabetical order
+//(4) ['Adam', 'Jonas', 'Martha', 'Zach']
+console.log(owners); //mutates the original array
+//NUMBERS
+console.log(movements);
+//console.log(movements.sort()); //(8) [-130, -400, -650, 1300, 200, 3000, 450, 70]
+//sorts by strings (converts each to a string and then sorts them)
+//negatives first, then first number 1,4,6, then positives number 1,2,3,4,7
+
+//fix by passing in a compare callback function into the sort method
+//callback takes two arguments (current value and next value)
+//think of a & b as two consecutive numbers anywhere in the array as you loop through the array
+
+//if we return less than zero, then the value 'a' will be sorted before value 'b'
+//return < 0 = A, B (keep order)
+//if we return a positive value, then the value 'b' will be sorted befor value 'a'
+//return > 0 = B, A (switch order)
+
+//sort in ascending order (small to large)
+//movements.sort((a, b) => {
+//  if (a > b) return 1; //(switch order)
+//  if (b > a) return -1; //(keep order) can also be written (a<b)
+//});
+//simplified
+movements.sort((a, b) => a - b); //returning value in arrow function
+console.log(movements);
+//sort in descending order (large to small)
+//movements.sort((a, b) => {
+//  if (a > b) return -1; //(keep order) can also be written (a<b)
+//  if (b > a) return 1; //(switch order)
+//});
+//simplified
+movements.sort((a, b) => b - a); //returning value in arrow function
+console.log(movements);
+//mixed array of different types do not use sort method
+
+
+////////////////////////////////////////////////////////////////////////
+//MORE WAYS OF CREATING AND FILLING ARRAYS
+
+//use to creating arrays like this:
+console.log([1, 2, 3, 4, 5, 6, 7]);
+console.log(new Array(1, 2, 3, 4, 5, 6, 7));
+const arr = [1, 2, 3, 4, 5, 6, 7];
+console.log(arr);
+
+//EMPTY ARRAYS
+//can also generate arrays programmatically
+//without having to define all the items manually
+const x = new Array(7);
+//only one element/argument passed in equals a new array...
+//with one empty element/argument that length
+console.log(x); //(7) [empty × 7]
+//can't use x array for anything now
+//example can't use map method on it to fill the array
+//console.log(x.map(() => 5)); //nothing happens
+//can call one method on it
+//FILL METHOD
+//x.fill(1); //array full on 1's
+//x.fill(1, 3); //can also specify where we want it to start filling
+x.fill(1, 3, 5); //can also specify where we want it to end filling
+x.fill(1);
+console.log(x);
+//can also use fill on arrays that aren't empty
+arr.fill(23, 2, 6);
+console.log(arr);
+
+//ARRAY.FROM FUNCTION
+//using from on the Array()constructor (NOT on the array itself)
+//Array is a function
+//on this function object we call the from() method
+//first pass in an object with the length property
+//second argument is a mapping function (like call back function we pass into map method)
+const y = Array.from({ length: 7 }, () => 1); //don't need to pass in any values here
+console.log(y);
+//create original array programmatically
+//[1, 2, 3, 4, 5, 6, 7]
+const z = Array.from({ length: 7 }, (_, i) => i + 1);
+//_ = current but don't use this parameter here
+//i = index (for every i add 1)
+console.log(z);
+
+//can create arrays from other things too (such as iterables or result from...
+//querySelectorAll()=node list[like an array but doesn't have access to array methods])
+labelBalance.addEventListener('click', function () {
+  const movementsUI = Array.from(
+    document.querySelectorAll('.movements__value'),
+    el => Number(el.textContent.replace('€', ''))
+  );
+  console.log(movementsUI);
+
+  //can also do this but then need to do mapping separately
+  //const movementsUI2 = [...document.querySelectorAll('.movements__value')];
+});
+
+
+/////////////////////////////////////////////////////////////////////////////
+//ARRAY METHODS PRACTICE
+
+//#1
+//calculate how much total has been deposited in bank (across all accounts)
+const bankDepositSum = accounts
+  .flatMap(acc => acc.movements)
+  //.flat()//or do .map then .flat
+  .filter(mov => mov > 0)
+  .reduce((sum, cur) => sum + cur, 0);
+console.log(bankDepositSum);
+
+//#2
+//calculate how many deposits have been made to bank of at least 1000
+//const numDeposits1000 = accounts
+//  .flatMap(acc => acc.movements)
+//  .filter(mov => mov >= 1000).length;
+//console.log(numDeposits1000);
+
+//same thing with reduce
+const numDeposits1000 = accounts
+  .flatMap(acc => acc.movements)
+  //accumulator is count of how many
+  //cur is current value
+  //so if current value is >= 1000 then return count +1 else return count, start at 0
+  //.reduce((count, cur) => (cur >= 1000 ? count + 1 : count), 0);
+  //use prefix plusplus operator
+  .reduce((count, cur) => (cur >= 1000 ? ++count : count), 0);
+console.log(numDeposits1000);
+
+//plusplus operator wont work here
+//.reduce((count, cur) => (cur >= 1000 ? count++ : count), 0); //will always have 0
+let a = 10;
+console.log(a++); //increments the value but returns the previous value (10)
+console.log(a); //11
+//use prefix plusplus operator
+let b = 9;
+console.log(++b); //10
+//#3
+//advance case of reduce method
+//create a new object
+//reduce is like 'Swiss Knife' of array methods
+//create object which contains the sum of the deposits and of the withdrawals
+const { deposits, withdrawals } = accounts //can deconstruct here {} or use sums
+  .flatMap(acc => acc.movements)
+  .reduce(
+    (sums, cur) => {
+      //cur > 0 ? (sums.deposits += cur) : (sums.withdrawals += cur);
+
+      //use bracket notation to clean up code (fine either way)
+      sums[cur > 0 ? 'deposits' : 'withdrawals'] += cur;
+      return sums;
+    },
+    { deposits: 0, withdrawals: 0 }
+    //starting point must also be an object (can be empty object {} or start with filled)
+  );
+console.log(deposits, withdrawals); //or sums
+
+//#4
+//create simple function to convert any string to a title case
+//(all the words are capitilized with a few exceptions)
+//this is a nice title -> This Is a Nice Title
+const convertTitleCase = function (title) {
+  const capitalize = str => str[0].toUpperCase() + str.slice(1);
+
+  const exceptions = ['a', 'an', 'and', 'the', 'but', 'or', 'on', 'in', 'with'];
+
+  const titleCase = title
+    .toLowerCase()
+    .split(' ')
+    .map(word =>
+      //if the current word is in the exceptions array return the word
+      //else return the capitalized word
+      exceptions.includes(word) ? word : capitalize(word)
+    )
+    .join(' '); // join array with space to create string
+  return capitalize(titleCase);
+  //to ensure first word of title is always capital even if it's an exception word
+};
+console.log(convertTitleCase('this is a nice title'));
+console.log(convertTitleCase('this is a LONG title but not too long'));
+console.log(convertTitleCase('and here is another title with an EXAMPLE'));
+*/
+
+///////////////////////////////////////
+// Coding Challenge #4
+
+/* 
+Julia and Kate are still studying dogs, and this time they are studying if dogs are eating too much or too little.
+Eating too much means the dog's current food portion is larger than the recommended portion, and eating too little is the opposite.
+Eating an okay amount means the dog's current food portion is within a range 10% above and 10% below the recommended portion (see hint).
+
+1. Loop over the array containing dog objects, and for each dog, calculate the recommended food portion and add it to the object as a new property. Do NOT create a new array, simply loop over the array. Forumla: recommendedFood = weight ** 0.75 * 28. (The result is in grams of food, and the weight needs to be in kg)
+2. Find Sarah's dog and log to the console whether it's eating too much or too little. HINT: Some dogs have multiple owners, so you first need to find Sarah in the owners array, and so this one is a bit tricky (on purpose)
+3. Create an array containing all owners of dogs who eat too much ('ownersEatTooMuch') and an array with all owners of dogs who eat too little ('ownersEatTooLittle').
+4. Log a string to the console for each array created in 3., like this: "Matilda and Alice and Bob's dogs eat too much!" and "Sarah and John and Michael's dogs eat too little!"
+5. Log to the console whether there is any dog eating EXACTLY the amount of food that is recommended (just true or false)
+6. Log to the console whether there is any dog eating an OKAY amount of food (just true or false)
+7. Create an array containing the dogs that are eating an OKAY amount of food (try to reuse the condition used in 6.)
+8. Create a shallow copy of the dogs array and sort it by recommended food portion in an ascending order (keep in mind that the portions are inside the array's objects)
+
+HINT 1: Use many different tools to solve these challenges, you can use the summary lecture to choose between them
+HINT 2: Being within a range 10% above and below the recommended portion means: current > (recommended * 0.90) && current < (recommended * 1.10). Basically, the current portion should be between 90% and 110% of the recommended portion.
+
+TEST DATA:
+const dogs = [
+  { weight: 22, curFood: 250, owners: ['Alice', 'Bob'] },
+  { weight: 8, curFood: 200, owners: ['Matilda'] },
+  { weight: 13, curFood: 275, owners: ['Sarah', 'John'] },
+  { weight: 32, curFood: 340, owners: ['Michael'] }
+];
+
+GOOD LUCK!!!
+*/
+
+const dogs = [
+  { weight: 22, curFood: 250, owners: ['Alice', 'Bob'] },
+  { weight: 8, curFood: 200, owners: ['Matilda'] },
+  { weight: 13, curFood: 275, owners: ['Sarah', 'John'] },
+  { weight: 32, curFood: 340, owners: ['Michael'] },
+];
+
+//#1
+dogs.forEach(dog => (dog.recFood = Math.trunc(dog.weight ** 0.75 * 28)));
+//console.log(dogs);
+
+//#2
+const dogSarah = dogs.find(dog => dog.owners.includes('Sarah'));
+console.log(dogSarah);
+console.log(
+  `Sarah's dog is eating too ${
+    dogSarah.curFood > dogSarah.recFood ? 'much' : 'little'
+  }`
+);
+
+//#3
+const ownersEatTooMuch = dogs
+  .filter(dog => dog.curFood > dog.recFood)
+  .flatMap(dog => dog.owners);
+//.flat();
+console.log(ownersEatTooMuch);
+
+const ownersEatTooLittle = dogs
+  .filter(dog => dog.curFood < dog.recFood)
+  .flatMap(dog => dog.owners);
+//.flat();
+console.log(ownersEatTooLittle);
+
+//#4
+console.log(`${ownersEatTooMuch.join(' and ')}'s dogs eat too much!`);
+console.log(`${ownersEatTooLittle.join(' and ')}'s dogs eat too little!`);
+
+//#5
+//whenever see word 'any' you can think of some method
+//returns true if at least one element in array satisfies a certain condition
+console.log(dogs.some(dog => dog.curFood === dog.recFood)); //false
+
+//current > (recommended * 0.90) && current < (recommended * 1.10)
+
+//#6
+//take function and store in own variable
+const checkEatingOkay = dog =>
+  dog.curFood > dog.recFood * 0.9 && dog.curFood < dog.recFood * 1.1;
+
+console.log(
+  dogs.some(
+    //dog => dog.curFood > dog.recFood * 0.9 && dog.curFood < dog.recFood * 1.1
+    checkEatingOkay
+  )
+); //true
+
+//#7
+console.log(dogs.filter(checkEatingOkay));
+
+//#8
+//sort it by recommended food portion in an ascending order
+const dogsSorted = dogs.slice().sort((a, b) => a.recFood - b.recFood);
+console.log(dogsSorted);
